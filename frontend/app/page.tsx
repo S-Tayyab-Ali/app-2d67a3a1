@@ -1,15 +1,32 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useEffect } from 'react';
+import GameScene from '@/components/game/GameScene';
+import HUD from '@/components/ui/HUD';
+import Menu from '@/components/ui/Menu';
+import { useGameStore } from '@/store/gameStore';
+
+export default function Page() {
+  const { status, pauseGame } = useGameStore();
+
+  // Handle ESC key to pause
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') {
+        pauseGame();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pauseGame]);
+
   return (
-    <div className="flex items-center justify-center h-screen">
-      <Image
-        alt="Freestyle Logo"
-        src="/placeholder-freestyle-logo.svg"
-        width={347}
-        height={280}
-        className="opacity-10 w-48"
-      />
-    </div>
+    <main className="relative w-full h-screen overflow-hidden bg-black">
+      <GameScene />
+      
+      {status === 'playing' && <HUD />}
+      <Menu />
+    </main>
   );
 }
+
