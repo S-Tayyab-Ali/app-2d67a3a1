@@ -5,6 +5,7 @@ import { RigidBody, RapierRigidBody, CuboidCollider } from '@react-three/rapier'
 import { useGameStore } from '@/store/gameStore';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { playHitSound } from '@/utils/sound';
 
 interface TargetProps {
   position: [number, number, number];
@@ -50,7 +51,7 @@ export default function Target({ position, isMoving = false }: TargetProps) {
     if (payload.other.rigidBodyObject?.userData?.type === 'bullet') {
       setIsActive(false);
       hitTarget();
-      // Play sound here if we had audio
+      playHitSound();
     }
   };
 
@@ -87,4 +88,3 @@ export default function Target({ position, isMoving = false }: TargetProps) {
     </RigidBody>
   );
 }
-

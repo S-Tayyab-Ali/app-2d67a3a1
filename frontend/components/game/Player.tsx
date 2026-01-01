@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { useGameStore } from '@/store/gameStore';
 import Bullet from './Bullet';
 import Weapon from './Weapon';
+import { playShootSound, playReloadSound } from '@/utils/sound';
 
 const SPEED = 5;
 const JUMP_FORCE = 5;
@@ -29,6 +30,7 @@ export default function Player() {
   // Bullets state
   const [bullets, setBullets] = useState<{ id: number; position: [number, number, number]; velocity: [number, number, number] }[]>([]);
   const bulletIdCounter = useRef(0);
+  const weaponGroupRef = useRef<THREE.Group>(null);
 
   // Keyboard controls
   useEffect(() => {
@@ -41,7 +43,12 @@ export default function Player() {
         case 'KeyA': setMovement(m => ({ ...m, left: true })); break;
         case 'KeyD': setMovement(m => ({ ...m, right: true })); break;
         case 'Space': setMovement(m => ({ ...m, jump: true })); break;
-        case 'KeyR': reload(); break;
+        case 'KeyR': 
+          if (ammo < 30 && !isReloading) {
+            playReloadSound();
+            reload(); 
+          }
+          break;
       }
     };
 
@@ -85,6 +92,7 @@ export default function Player() {
 
   const handleShoot = () => {
     shoot();
+    playShootSound();
     
     // Calculate bullet spawn position and velocity
     const direction = new THREE.Vector3();
@@ -147,6 +155,12 @@ export default function Player() {
     // Sync camera to player body
     const translation = rigidBody.current.translation();
     camera.position.set(translation.x, translation.y + 1.5, translation.z);
+
+    // Sync weapon to camera
+    if (weaponGroupRef.current) {
+      weaponGroupRef.current.position.copy(camera.position);
+      weaponGroupRef.current.rotation.copy(camera.rotation);
+    }
   });
 
   return (
@@ -164,7 +178,7 @@ export default function Player() {
       </RigidBody>
 
       {/* Weapon attached to camera */}
-      <group position={camera.position} rotation={camera.rotation}>
+      <group ref={weaponGroupRef}>
         <Weapon />
       </group>
 
@@ -182,4 +196,3 @@ export default function Player() {
     </>
   );
 }
-
